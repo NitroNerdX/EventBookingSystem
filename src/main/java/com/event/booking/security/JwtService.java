@@ -48,14 +48,12 @@ public class JwtService {
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> resolver) {
-        System.out.println("Extracting claim from token: " + token);
+
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-//        System.out.println("Extracting claim from token: " + token);
-        System.out.println("Extracted claim: " + resolver.apply(claims));
         return resolver.apply(claims);
     }
 

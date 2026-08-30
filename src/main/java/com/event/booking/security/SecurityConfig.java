@@ -40,7 +40,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        System.out.println("Security filter chain initialized");
+
         return http.build();
     }
 

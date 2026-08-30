@@ -35,7 +35,6 @@ public class EventService {
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
-
         return eventRepository.save(event);
     }
 

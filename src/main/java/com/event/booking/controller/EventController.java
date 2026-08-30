@@ -44,6 +44,7 @@ public class EventController {
     public ResponseEntity<EventResponse> createEvent(
             @Valid @RequestBody CreateEventRequest request,
             @AuthenticationPrincipal User organizer) {
+
         Event event = eventService.createEvent(request, organizer);
         return ResponseEntity.status(HttpStatus.CREATED).body(EntityMapper.toEventResponse(event));
     }
