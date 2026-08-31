@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -16,6 +17,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("""
         SELECT b FROM Booking b
         JOIN FETCH b.customer
+        JOIN FETCH b.event
         WHERE b.event.id = :eventId AND b.status = 'CONFIRMED'
         """)
     List<Booking> findConfirmedBookingsWithCustomerByEventId(@Param("eventId") Long eventId);
@@ -35,4 +37,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // pre-check here lets you return a clean 409 instead of a raw
     // DataIntegrityViolationException bubbling up
     boolean existsByCustomerIdAndEventIdAndStatus(Long customerId, Long eventId, BookingStatus status);
+
+    @Query("""
+    SELECT b FROM Booking b
+    JOIN FETCH b.customer
+    JOIN FETCH b.event
+    WHERE b.id = :bookingId
+    """)
+    Optional<Booking> findByIdWithEventAndCustomer(@Param("bookingId") Long bookingId);
 }
