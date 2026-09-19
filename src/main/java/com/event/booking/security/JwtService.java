@@ -7,11 +7,13 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 public class JwtService {
 
@@ -22,6 +24,7 @@ public class JwtService {
     private long expirationMs;
 
     public String generateToken(UserDetails userDetails) {
+        log.debug("Generating JWT for user={}", userDetails.getUsername());
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
 

@@ -9,6 +9,7 @@ import com.event.booking.mapper.EntityMapper;
 import com.event.booking.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/events")
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class EventController {
 
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEvent(@PathVariable Long id) {
+        log.debug("GET /api/events/{}", id);
         Event event = eventService.getEventById(id);
         return ResponseEntity.ok(EntityMapper.toEventResponse(event));
     }
@@ -39,6 +42,7 @@ public class EventController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "eventTime") String sortBy) {
+        log.debug("GET /api/events page={} size={} sortBy={}", page, size, sortBy);
 
         // Cap page size — otherwise a client can request size=1000000
         // and pull the whole table into memory in a single request
@@ -56,7 +60,7 @@ public class EventController {
     public ResponseEntity<EventResponse> createEvent(
             @Valid @RequestBody CreateEventRequest request,
             @AuthenticationPrincipal User organizer) {
-
+        log.info("POST /api/events by organizerId={}", organizer.getId());
         Event event = eventService.createEvent(request, organizer);
         return ResponseEntity.status(HttpStatus.CREATED).body(EntityMapper.toEventResponse(event));
     }
@@ -66,6 +70,7 @@ public class EventController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateEventRequest request,
             @AuthenticationPrincipal User requester) {
+        log.info("PUT /api/events/{} by userId={}", id, requester.getId());
         Event event = eventService.updateEvent(id, request, requester);
         return ResponseEntity.ok(EntityMapper.toEventResponse(event));
     }
@@ -74,6 +79,7 @@ public class EventController {
     @GetMapping("/mine")
     public ResponseEntity<List<EventResponse>> getMyEvents(
             @AuthenticationPrincipal User organizer) {
+        log.debug("GET /api/events/mine organizerId={}", organizer.getId());
         List<EventResponse> events = eventService.getEventsByOrganizer(organizer).stream()
                 .map(EntityMapper::toEventResponse)
                 .toList();

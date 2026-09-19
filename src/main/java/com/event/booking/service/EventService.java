@@ -8,6 +8,7 @@ import com.event.booking.exception.ResourceNotFoundException;
 import com.event.booking.exception.UnauthorizedAccessException;
 import com.event.booking.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -25,6 +27,7 @@ public class EventService {
 
     @Transactional
     public Event createEvent(CreateEventRequest request, User organizer) {
+        log.info("Creating event name={} organizerId={}", request.name(), organizer.getId());
         Event event = Event.builder()
                 .organizer(organizer)
                 .name(request.name())
@@ -36,11 +39,14 @@ public class EventService {
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
-        return eventRepository.save(event);
+        Event saved = eventRepository.save(event);
+        log.info("Created event id={} name={} organizerId={}", saved.getId(), saved.getName(), saved.getOrganizer().getId());
+        return saved;
     }
 
     @Transactional
     public Event updateEvent(Long eventId, UpdateEventRequest request, User requester) {
+        log.info("Update attempt: eventId={} requesterId={}", eventId, requester.getId());
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + eventId));
 
@@ -59,7 +65,7 @@ public class EventService {
         try {
             Event saved = eventRepository.save(event);
             // Fire Background Task 2 — after the update is committed
-//            System.out.println("Event updated, notifying customers of event update for event ID: " + saved.getId());
+            log.info("Event updated id={} name={} organizerId={}", saved.getId(), saved.getName(), saved.getOrganizer().getId());
             eventNotificationService.notifyCustomersOfEventUpdate(saved);
             return saved;
         } catch (ObjectOptimisticLockingFailureException ex) {
@@ -71,6 +77,7 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public Event getEventById(Long eventId) {
+        log.debug("Fetching event by id={}", eventId);
         return eventRepository.findByIdWithOrganizer(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + eventId));
     }

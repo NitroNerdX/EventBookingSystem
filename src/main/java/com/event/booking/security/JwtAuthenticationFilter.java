@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -31,16 +33,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
         String path = request.getServletPath();
+        log.debug("JwtAuthenticationFilter incoming request path={}", path);
 
         if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
-            return;
+           log.debug("Skipping JWT filter for public path={}", path);
+           filterChain.doFilter(request, response);
+           return;
         }
 
 
         String authHeader = request.getHeader("Authorization");
+        log.debug("Authorization header present={}", authHeader != null);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("Missing or invalid Authorization header for path={}", path);
             // Delegate to the configured AuthenticationEntryPoint for consistent 401 handling
             authenticationEntryPoint.commence(request, response,
                     new org.springframework.security.authentication.InsufficientAuthenticationException(
@@ -50,6 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7).trim();
         if (token.isEmpty()) {
+            log.debug("Empty bearer token provided for path={}", path);
             authenticationEntryPoint.commence(request, response,
                     new org.springframework.security.authentication.InsufficientAuthenticationException(
                             "Authentication failed. Authorization header contains an empty bearer token."));
@@ -70,10 +77,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("Authentication set for user email={}", email);
                 }
             }
 
         } catch (io.jsonwebtoken.JwtException ex) {
+            log.warn("Invalid JWT token for path={}: {}", path, ex.getMessage());
             authenticationEntryPoint.commence(request, response,
                     new org.springframework.security.authentication.InsufficientAuthenticationException(
                             "Authentication failed. The JWT token is invalid, expired, or malformed.", ex));
