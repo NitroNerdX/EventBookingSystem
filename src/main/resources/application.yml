@@ -1,6 +1,8 @@
 spring:
   config:
     import: optional:file:./.env[.properties]
+  profiles:
+    active: dev
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -19,3 +21,14 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus
+    endpoint:
+      health:
+        show-details: when-authorized
+    metrics:
+      tags:
+        application: event-booking-system
