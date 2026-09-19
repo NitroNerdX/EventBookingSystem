@@ -59,7 +59,7 @@ public class EventService {
             Event saved = eventRepository.save(event);
             // Fire Background Task 2 — after the update is committed
 //            System.out.println("Event updated, notifying customers of event update for event ID: " + saved.getId());
-            eventNotificationService.notifyCustomersOfEventUpdate(saved.getId());
+            eventNotificationService.notifyCustomersOfEventUpdate(saved);
             return saved;
         } catch (ObjectOptimisticLockingFailureException ex) {
             // @Version mismatch — someone else updated this event concurrently
