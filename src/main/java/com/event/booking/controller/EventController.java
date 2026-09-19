@@ -13,7 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
+import com.event.booking.dto.response.PagedResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 
 @RestController
@@ -23,21 +27,29 @@ public class EventController {
 
     private final EventService eventService;
 
-    // Public/browse — any authenticated user can view events
-    @GetMapping
-    public ResponseEntity<List<EventResponse>> getAllEvents() {
-        List<EventResponse> events = eventService.getAllEvents().stream()
-                .map(EntityMapper::toEventResponse)
-                .toList();
-        return ResponseEntity.ok(events);
-    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEvent(@PathVariable Long id) {
         Event event = eventService.getEventById(id);
         return ResponseEntity.ok(EntityMapper.toEventResponse(event));
     }
+    @GetMapping
+    public ResponseEntity<PagedResponse<EventResponse>> getAllEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "eventTime") String sortBy) {
 
+        // Cap page size — otherwise a client can request size=1000000
+        // and pull the whole table into memory in a single request
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safePage = Math.max(page, 0);
+
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(sortBy).ascending());
+        Page<Event> events = eventService.getUpcomingEvents(pageable);
+
+        return ResponseEntity.ok(PagedResponse.from(events, EntityMapper::toEventResponse));
+    }
     // Organizer-only — enforced at the security layer in Step 10,
     // this controller doesn't need to know about roles at all
     @PostMapping

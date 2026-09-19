@@ -11,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -73,7 +74,10 @@ public class EventService {
         return eventRepository.findByIdWithOrganizer(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + eventId));
     }
-
+    @Transactional(readOnly = true)
+    public Page<Event> getUpcomingEvents(Pageable pageable) {
+        return eventRepository.findUpcomingEvents(OffsetDateTime.now(), pageable);
+    }
     @Transactional(readOnly = true)
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
