@@ -2,7 +2,7 @@ spring:
   config:
     import: optional:file:./.env[.properties]
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   mail:
     host: smtp.gmail.com
     port: 587
@@ -14,11 +14,15 @@ spring:
           auth: true
           starttls:
             enable: true
-        debug: ${MAIL_DEBUG:true}  # set to true to enable JavaMail SMTP debug when troubleshooting (dev only)
+        debug: ${MAIL_DEBUG:true}
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 10000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -26,21 +30,23 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  jwt:
-    secret: ${JWT_SECRET}
-    expiration-ms: 86400000   # 24 hours
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health,info,metrics,prometheus
-    endpoint:
-      health:
-        show-details: when-authorized
-    metrics:
-      tags:
-        application: event-booking-system
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: event-booking-system
