@@ -3,6 +3,18 @@ spring:
     import: optional:file:./.env[.properties]
   profiles:
     active: dev
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        debug: ${MAIL_DEBUG:true}  # set to true to enable JavaMail SMTP debug when troubleshooting (dev only)
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
