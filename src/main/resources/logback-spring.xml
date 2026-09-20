@@ -5,13 +5,15 @@
     <property name="LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId}] %-5level %logger{36} - %msg%n"/>
 
-    <!-- DEV: colored console, verbose -->
+    <!-- Define a base console appender OUTSIDE any profile block,
+         so it's always available regardless of active profile -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
     <springProfile name="dev">
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder>
-                <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{requestId}] %highlight(%-5level) %logger{36} - %msg%n</pattern>
-            </encoder>
-        </appender>
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
@@ -19,7 +21,6 @@
         <logger name="org.hibernate.SQL" level="DEBUG"/>
     </springProfile>
 
-    <!-- PROD: rolling file, no SQL noise -->
     <springProfile name="prod">
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>logs/event-booking.log</file>
@@ -33,13 +34,17 @@
                 <pattern>${LOG_PATTERN}</pattern>
             </encoder>
         </appender>
+        <!-- Also log to console on Render — a rolling file inside an
+             ephemeral container is useless, you'd never see it. Render
+             captures stdout as your log viewer, so console output IS
+             what you want in prod here, not (only) a file. -->
         <root level="WARN">
             <appender-ref ref="FILE"/>
+            <appender-ref ref="CONSOLE"/>
         </root>
         <logger name="com.event.booking" level="INFO"/>
     </springProfile>
 
-    <!-- Fallback if no profile is active -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
