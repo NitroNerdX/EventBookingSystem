@@ -16,13 +16,13 @@ spring:
             enable: true
         debug: ${MAIL_DEBUG:true}
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 10000
+     url: ${DB_URL}
+     username: ${DB_USERNAME}
+     password: ${DB_PASSWORD}
+#     hikari:
+#      maximum-pool-size: 20
+#      minimum-idle: 5
+#      connection-timeout: 10000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -35,18 +35,18 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-jwt:
-  secret: ${JWT_SECRET}
-  expiration-ms: 86400000
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 86400000
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: when-authorized
-  metrics:
-    tags:
-      application: event-booking-system
+  management:
+    endpoints:
+      web:
+         exposure:
+         include: health,info,metrics,prometheus
+    endpoint:
+      health:
+         show-details: when-authorized
+    metrics:
+      tags:
+         application: event-booking-system
